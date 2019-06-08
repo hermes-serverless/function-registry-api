@@ -21,16 +21,14 @@ export class User extends Model {
   public getFunction!: HasManyGetAssociationsMixin<HermesFunction>
   public addFunction!: HasManyAddAssociationMixin<HermesFunction, number>
   public hasFunction!: HasManyHasAssociationMixin<HermesFunction, number>
-  public countFunctions!: HasManyCountAssociationsMixin
+  public countFunction!: HasManyCountAssociationsMixin
   public createFunction!: HasManyCreateAssociationMixin<HermesFunction>
-  public readonly functions?: HermesFunction[]
 
   public getRun!: HasManyGetAssociationsMixin<HermesRun>
   public addRun!: HasManyAddAssociationMixin<HermesRun, number>
   public hasRun!: HasManyHasAssociationMixin<HermesRun, number>
   public countRuns!: HasManyCountAssociationsMixin
   public createRun!: HasManyCreateAssociationMixin<HermesRun>
-  public readonly runs?: HermesRun[]
 
   public static associations: {
     functions: Association<User, HermesFunction>
@@ -63,7 +61,7 @@ export class Initializer implements ModelInitializer {
   }
 
   initRelations = (models: any) => {
-    User.hasMany(models.HermesFunction)
+    User.hasMany(models.HermesFunction, { as: 'Function', foreignKey: 'ownerUserId' })
     User.hasMany(models.HermesRun)
   }
 }
