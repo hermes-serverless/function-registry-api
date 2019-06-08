@@ -31,3 +31,4 @@ const db: Database = {
 }
 
 export { db }
+export { User, HermesFunction, HermesRunResult, HermesRun } from './definitions'

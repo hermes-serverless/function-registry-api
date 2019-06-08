@@ -1,2 +1,1 @@
-import { db } from './models'
-export { db }
+export { db, User, HermesFunction, HermesRun, HermesRunResult } from './models'
