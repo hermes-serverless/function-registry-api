@@ -24,6 +24,17 @@ const seedFunctions: FunctionSeed[] = [
       functionVersion: '1.0.0',
     },
   },
+  {
+    owner: 'tiago',
+    data: {
+      functionName: 'reduce-mult',
+      language: 'cuda',
+      gpuCapable: true,
+      scope: 'public',
+      imageUrl: 'dockerhub.com.br',
+      functionVersion: '1.0.0',
+    },
+  },
 ]
 
 export default seedFunctions
