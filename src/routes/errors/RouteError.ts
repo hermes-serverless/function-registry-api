@@ -21,3 +21,9 @@ export class NoSuchUser extends RouteError {
     super(msg, statusCode)
   }
 }
+
+export class NoSuchFunction extends RouteError {
+  constructor(msg: string, statusCode: number) {
+    super(msg, statusCode)
+  }
+}
