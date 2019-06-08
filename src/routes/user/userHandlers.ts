@@ -29,7 +29,12 @@ export const writeUserOnReq = async (req: ReqWithUser, res: Response, next: Next
       where: { id: req.params.userId },
       attributes: { exclude: ['password'] },
     })
-    if (!user) throw new NoSuchUser(`No user with id ${req.params.userId}`, 400)
+    if (!user)
+      throw new NoSuchUser({
+        msg: `No user with id ${req.params.userId}`,
+        errorName: 'NoSuchUser',
+        statusCode: 404,
+      })
     req.user = user
     next()
   } catch (err) {
