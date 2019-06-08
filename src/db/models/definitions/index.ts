@@ -24,3 +24,8 @@ export const models: HermesModels = {
 
 const definitions: DefImport[] = [UserDef, HermesFunctionDef, HermesRunDef, HermesRunResultDef]
 export const modelInitializers = definitions.map(def => new def.Initializer())
+
+export { User } from './User'
+export { HermesFunction } from './HermesFunction'
+export { HermesRun } from './HermesRun'
+export { HermesRunResult } from './HermesRunResult'
