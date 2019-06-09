@@ -65,10 +65,11 @@ export const writeFnOnReq = async (req: ReqWithFn, res: Response, next: NextFunc
   try {
     const fnArr = await req.user.getFunction({ where: { functionName: req.params.functionName } })
     if (fnArr.length == 0)
-      throw new NoSuchFunction(
-        `No function with name ${req.params.functionName} for user ${req.user.username}`,
-        400
-      )
+      throw new NoSuchFunction({
+        msg: `No function with name ${req.params.functionName} for user ${req.user.username}`,
+        errorName: 'NoSuchFunction',
+        statusCode: 404,
+      })
     req.fn = fnArr[0]
     next()
   } catch (err) {
