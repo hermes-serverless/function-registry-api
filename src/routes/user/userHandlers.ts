@@ -26,7 +26,7 @@ const updateUser = async (req: ReqWithUser): Promise<User> => {
 export const writeUserOnReq = async (req: ReqWithUser, res: Response, next: NextFunction) => {
   try {
     const user = await db.User.findOne({
-      where: { id: req.params.userId },
+      where: { username: req.params.username },
       attributes: { exclude: ['password'] },
     })
     if (!user)
