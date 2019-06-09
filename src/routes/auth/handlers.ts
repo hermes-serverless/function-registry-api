@@ -58,8 +58,8 @@ export const handleRegister = async (req: Request, res: Response, next: NextFunc
     if (req.method == 'POST') {
       if (!req.body.username || !req.body.password) {
         throw new RouteError({
-          msg: 'MissingArgument',
-          errorName: 'Missing username or password on body',
+          errorName: 'MissingArgument',
+          msg: 'Missing username or password on body',
           statusCode: 400,
         })
       }
@@ -85,8 +85,8 @@ export const handleLogin = async (req: Request, res: Response, next: NextFunctio
     if (req.method == 'POST') {
       if (!req.body.username || !req.body.password) {
         throw new RouteError({
-          msg: 'MissingArgument',
-          errorName: 'Missing username or password on body',
+          errorName: 'MissingArgument',
+          msg: 'Missing username or password on body',
           statusCode: 400,
         })
       }
@@ -135,7 +135,14 @@ export const handleGetMe = async (req: Request, res: Response, next: NextFunctio
       } else {
         const token = parts[1]
         jwt.verify(token, config.secret, function(err, decoded) {
-          if (err) throw err
+          if (err) {
+            Logger.error('JsonWebTokenError thrown\n', err)
+            throw new RouteError({
+              errorName: 'AuthenticationError',
+              msg: 'Invalid or expired token',
+              statusCode: 401,
+            })
+          }
           res.status(200).send(decoded)
         })
       }
