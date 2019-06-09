@@ -47,6 +47,15 @@ export class Initializer implements ModelInitializer {
       username: {
         type: DataTypes.STRING,
         allowNull: false,
+        validate: {
+          is: {
+            args: [/^[a-zA-Z0-9]*$/i],
+            msg: 'Use only letters and numbers on username',
+          },
+          notEmpty: {
+            msg: "Username can't be empty",
+          },
+        },
       },
       password: {
         type: DataTypes.STRING,
