@@ -1,6 +1,6 @@
 import seedFunctions, { FunctionData, FunctionSeed } from './samples/hermesFunctions'
 import seedUsers, { UserSeed } from './samples/users'
-import { hashPassword } from './../routes/auth'
+import { hashPassword } from './../routes/auth/handlers'
 import { QueryInterface } from 'sequelize'
 import { db } from '../db'
 
