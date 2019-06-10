@@ -1,7 +1,7 @@
 import { Logger } from './../../utils/Logger'
 import { Request, Response, NextFunction } from 'express'
 import { db, User } from '../../db'
-import { NoSuchUser } from '../errors/RouteError'
+import { NoSuchUser, RouteError, ValidationError } from '../errors/RouteError'
 import { ReqWithUser } from './types'
 
 const getAllUsers = async (req: ReqWithUser): Promise<User[]> => {
@@ -15,12 +15,27 @@ const deleteOneUser = async (req: ReqWithUser): Promise<User> => {
 }
 
 const updateUser = async (req: ReqWithUser): Promise<User> => {
-  const user = await req.user.set({
-    ...(req.body.username != null ? { username: req.body.username } : {}),
-  })
+  try {
+    const user = await req.user.set({
+      ...(req.body.username != null ? { username: req.body.username } : {}),
+    })
 
-  await user.save()
-  return user
+    await user.save()
+    return user
+  } catch (err) {
+    Logger.error('Error on register user\n', err)
+    if (err.name === 'SequelizeUniqueConstraintError')
+      throw new RouteError({
+        msg: `User ${req.body.username} already exists`,
+        errorName: 'UserAlreadyExists',
+        statusCode: 409,
+      })
+
+    if (err.name === 'SequelizeValidationError')
+      throw new ValidationError('Invalid fields', 400, err)
+
+    throw err
+  }
 }
 
 export const writeUserOnReq = async (req: ReqWithUser, res: Response, next: NextFunction) => {
@@ -31,7 +46,7 @@ export const writeUserOnReq = async (req: ReqWithUser, res: Response, next: Next
     })
     if (!user)
       throw new NoSuchUser({
-        msg: `No user with id ${req.params.userId}`,
+        msg: `No user with username ${req.params.username}`,
         errorName: 'NoSuchUser',
         statusCode: 404,
       })
