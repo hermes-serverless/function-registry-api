@@ -1,9 +1,16 @@
 {
   "development": {
-    "username": "test",
-    "password": "pass",
-    "database": "test",
-    "host": "127.0.0.1",
+    "username": "hermes",
+    "password": "hermes",
+    "database": "hermes",
+    "host": "db",
+    "dialect": "postgres"
+  },
+  "outsideContainer": {
+    "username": "hermes",
+    "password": "hermes",
+    "database": "hermes",
+    "host": "localhost",
     "dialect": "postgres"
   },
   "test": {
