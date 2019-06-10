@@ -1,0 +1,8 @@
+build
+build-seeders
+build-migrations
+node_modules
+.vscode
+
+seed-tsconfig.json
+migrate-tsconfig.json
