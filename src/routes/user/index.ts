@@ -4,9 +4,13 @@ import { writeUserOnReq, handleAllUsers, handleOneUser } from './userHandlers'
 
 const userRouter = Router()
 
-userRouter.all('/:userId', [writeUserOnReq, handleOneUser])
-userRouter.all('/:userId/function/:functionName', [writeUserOnReq, writeFnOnReq, handleOneFunction])
-userRouter.all('/:userId/function', [writeUserOnReq, handleAllFunctions])
+userRouter.all('/:username', [writeUserOnReq, handleOneUser])
+userRouter.all('/:username/function/:functionName', [
+  writeUserOnReq,
+  writeFnOnReq,
+  handleOneFunction,
+])
+userRouter.all('/:username/function', [writeUserOnReq, handleAllFunctions])
 userRouter.all('/', handleAllUsers)
 
 export { userRouter }
