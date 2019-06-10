@@ -23,7 +23,7 @@ const updateUser = async (req: ReqWithUser): Promise<User> => {
     await user.save()
     return user
   } catch (err) {
-    Logger.error('Error on register user\n', err)
+    Logger.error('Error on update user\n', err)
     if (err.name === 'SequelizeUniqueConstraintError')
       throw new RouteError({
         msg: `User ${req.body.username} already exists`,
