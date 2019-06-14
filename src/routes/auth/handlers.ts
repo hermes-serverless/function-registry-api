@@ -15,7 +15,7 @@ const getToken = (userId: number, username: string): string => {
   return jwt.sign({ id: userId, username }, config.secret, { expiresIn: TOKEN_EXPIRATION })
 }
 
-const registerUser = async ({ username, password }: LoginData) => {
+const registerUser = async ({ username, password }: LoginData): Promise<string> => {
   try {
     const user = await db.User.create({
       username: username,
@@ -37,6 +37,11 @@ const registerUser = async ({ username, password }: LoginData) => {
 
     throw err
   }
+}
+
+const usernameExists = async (username: string): Promise<boolean> => {
+  const user = await db.User.findOne({ where: { username } })
+  return user != null
 }
 
 const login = async ({ username, password }: LoginData): Promise<string> => {
@@ -71,6 +76,21 @@ export const handleRegister = async (req: Request, res: Response, next: NextFunc
 
       const token = await registerUser(loginData)
       res.status(200).send({ auth: true, token })
+    } else {
+      res.status(400).send('This route only accepts POST requests')
+      return
+    }
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const handleUsernameExists = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (req.method == 'POST') {
+      const username = req.params.username
+      const exists = await usernameExists(username)
+      res.status(200).send({ username, exists })
     } else {
       res.status(400).send('This route only accepts POST requests')
       return
