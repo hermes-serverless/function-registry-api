@@ -1,12 +1,14 @@
-import { Sequelize, Model, DataTypes, ModelAttributes } from 'sequelize'
+import { DataTypes, Model, ModelAttributes, Sequelize } from 'sequelize'
 import { ModelInitializer } from './ModelInitizalizer'
 
-export class HermesRun extends Model {
+export class Run extends Model {
   public id!: number
   public functionId!: number
   public userId!: number
   public startTime!: Date
   public status!: string
+  public endTime: Date
+  public outputPath: string
 
   public readonly createdAt!: Date
   public readonly updatedAt!: Date
@@ -14,7 +16,7 @@ export class HermesRun extends Model {
 
 export class Initializer implements ModelInitializer {
   initAttributes(sequelize: Sequelize) {
-    const HermesRunAttributes: ModelAttributes = {
+    const runAttributes: ModelAttributes = {
       id: {
         type: DataTypes.NUMBER,
         autoIncrement: true,
@@ -30,23 +32,44 @@ export class Initializer implements ModelInitializer {
       },
       startTime: {
         type: DataTypes.DATE,
-        allowNull: false,
+        allowNull: true,
       },
       status: {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      endTime: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      watcherId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
     }
 
-    HermesRun.init(HermesRunAttributes, {
-      tableName: 'HermesRuns',
+    Run.init(runAttributes, {
       sequelize,
+      tableName: 'Runs',
     })
   }
 
   initRelations = (models: any) => {
-    HermesRun.belongsTo(models.HermesFunction, { foreignKey: 'functionId', targetKey: 'id' })
-    HermesRun.belongsTo(models.User, { foreignKey: 'userId', targetKey: 'id' })
-    HermesRun.hasOne(models.HermesRunResult)
+    Run.belongsTo(models.HermesFunction, {
+      foreignKey: {
+        name: 'functionId',
+        allowNull: false,
+      },
+      targetKey: 'id',
+      as: 'function',
+    })
+
+    Run.belongsTo(models.User, {
+      foreignKey: {
+        name: 'userId',
+        allowNull: false,
+      },
+      targetKey: 'id',
+    })
   }
 }
