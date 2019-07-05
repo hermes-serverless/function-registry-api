@@ -5,39 +5,41 @@ else
  ENVIRONMENT="$1"
 fi
 
+if [ -z "$2" ]; then
+ COMMAND='db:seed:all'
+else
+ COMMAND="$2"
+fi
+
 set -euo pipefail
 
-echo ""
-echo "Migrating for environment: $ENVIRONMENT"
-echo ""
-
 start_text=(
-  "Creating tsconfig for migrations compilation."
-  "Compiling migration scripts."
-  "Migrating."
-  "Removing migrate-tsconfig"
+  "Creating tsconfig for seeders compilation."
+  "Compiling seeds scripts."
+  "Doing $COMMAND"
+  "Removing seed-tsconfig"
 )
 
 end_text=(
   "Created tsconfig file"
   "Compilation completed."
-  "Migration completed."
+  "$COMMAND DONE"
   "Done"
 )
 
 json_config='{
   "compilerOptions": { 
-    "outDir": "build-migrations"
+    "outDir": "build-seeders"
    }, 
    "extends": "./base-tsconfig.json", 
-   "include": ["src/migrations/*.ts"] 
+   "include": ["src/seeders/*.ts"] 
 }'
 
 commands=(
-  "echo '$json_config' > migrate-tsconfig.json"
-  "yarn tsc --project migrate-tsconfig.json"
-  "npx sequelize-cli db:migrate --env $ENVIRONMENT"
-  "rm migrate-tsconfig.json"
+  "echo '$json_config' > seed-tsconfig.json"
+  "yarn tsc --project seed-tsconfig.json"
+  "NODE_ENV=$ENVIRONMENT npx sequelize-cli $COMMAND --env $ENVIRONMENT"
+  "rm seed-tsconfig.json"
 )
 
 i=0
