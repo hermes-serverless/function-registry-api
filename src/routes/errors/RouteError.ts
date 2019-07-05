@@ -50,6 +50,12 @@ export class NoSuchFunction extends RouteError {
   }
 }
 
+export class NoSuchRun extends RouteError {
+  constructor(args: RouteErrorConstructorArgs) {
+    super(args)
+  }
+}
+
 export class ValidationError extends RouteError {
   constructor(msg: string, statusCode: number, validationError: SequelizeValidationError) {
     const errorName = 'ValidationError'
@@ -65,6 +71,16 @@ export class ValidationError extends RouteError {
       msg,
       statusCode,
       detail: validationErrors,
+    })
+  }
+}
+
+export class FunctionAlreadyExists extends RouteError {
+  constructor(msg?: string) {
+    super({
+      msg: msg ? msg : `Function with this name and version already exists for this user`,
+      errorName: 'FunctionAlreadyExists',
+      statusCode: 409,
     })
   }
 }

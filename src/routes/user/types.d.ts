@@ -1,10 +1,15 @@
 import { Request } from 'express'
-import { User, HermesFunction } from '../../db'
+import { HermesFunction, Run, User } from '../../db'
 
 export interface ReqWithUser extends Request {
   user: User
 }
 
 export interface ReqWithFn extends ReqWithUser {
-  fn: HermesFunction
+  fnArr: HermesFunction[]
+}
+
+export interface ReqWithRun extends ReqWithUser {
+  runArr: Run[]
+  fn?: HermesFunction
 }

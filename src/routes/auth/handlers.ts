@@ -1,10 +1,10 @@
-import { Response, Request, NextFunction } from 'express'
-import { Logger } from '../../utils/Logger'
-import config from '../../jwtConfig'
 import bcrypt from 'bcrypt'
+import { NextFunction, Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
 import { db } from '../../db'
-import { RouteError, NoSuchUser, ValidationError } from '../errors/RouteError'
+import config from '../../jwtConfig'
+import { Logger } from '../../utils/Logger'
+import { NoSuchUser, RouteError, ValidationError } from '../errors/RouteError'
 import { LoginData } from './types'
 
 const TOKEN_EXPIRATION = 86400
@@ -12,28 +12,30 @@ const TOKEN_EXPIRATION = 86400
 export const hashPassword = (password: string): string => bcrypt.hashSync(password, 8)
 
 const getToken = (userId: number, username: string): string => {
-  return jwt.sign({ id: userId, username }, config.secret, { expiresIn: TOKEN_EXPIRATION })
+  return jwt.sign({ username, id: userId }, config.secret, { expiresIn: TOKEN_EXPIRATION })
 }
 
 const registerUser = async ({ username, password }: LoginData): Promise<string> => {
   try {
     const user = await db.User.create({
-      username: username,
+      username,
       password: hashPassword(password),
     })
     const token = getToken(user.id, user.username)
     return token
   } catch (err) {
     Logger.error('Error on register user\n', err)
-    if (err.name === 'SequelizeUniqueConstraintError')
+    if (err.name === 'SequelizeUniqueConstraintError') {
       throw new RouteError({
         msg: `User ${username} already exists`,
         errorName: 'UserAlreadyExists',
         statusCode: 409,
       })
+    }
 
-    if (err.name === 'SequelizeValidationError')
+    if (err.name === 'SequelizeValidationError') {
       throw new ValidationError('Invalid fields', 400, err)
+    }
 
     throw err
   }
@@ -60,7 +62,7 @@ const login = async ({ username, password }: LoginData): Promise<string> => {
 
 export const handleRegister = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    if (req.method == 'POST') {
+    if (req.method === 'POST') {
       if (!req.body.username || !req.body.password) {
         throw new RouteError({
           errorName: 'MissingArgument',
@@ -75,7 +77,7 @@ export const handleRegister = async (req: Request, res: Response, next: NextFunc
       }
 
       const token = await registerUser(loginData)
-      res.status(200).send({ auth: true, token })
+      res.status(200).send({ token, auth: true })
     } else {
       res.status(400).send('This route only accepts POST requests')
       return
@@ -87,7 +89,7 @@ export const handleRegister = async (req: Request, res: Response, next: NextFunc
 
 export const handleUsernameExists = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    if (req.method == 'POST') {
+    if (req.method === 'POST') {
       const username = req.params.username
       const exists = await usernameExists(username)
       res.status(200).send({ username, exists })
@@ -102,7 +104,7 @@ export const handleUsernameExists = async (req: Request, res: Response, next: Ne
 
 export const handleLogin = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    if (req.method == 'POST') {
+    if (req.method === 'POST') {
       if (!req.body.username || !req.body.password) {
         throw new RouteError({
           errorName: 'MissingArgument',
@@ -123,7 +125,7 @@ export const handleLogin = async (req: Request, res: Response, next: NextFunctio
           errorName: 'AuthenticationError',
           statusCode: 401,
         })
-      } else res.status(200).send({ auth: true, token })
+      } else res.status(200).send({ token, auth: true })
     } else {
       res.status(400).send('This route only accepts POST requests')
       return
@@ -135,7 +137,7 @@ export const handleLogin = async (req: Request, res: Response, next: NextFunctio
 
 export const handleGetMe = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    if (req.method == 'GET') {
+    if (req.method === 'GET') {
       const fullAuthorization = req.headers['authorization'] as string
       if (!fullAuthorization) {
         throw new RouteError({
@@ -146,7 +148,7 @@ export const handleGetMe = async (req: Request, res: Response, next: NextFunctio
       }
 
       const parts = fullAuthorization.split(' ')
-      if (parts.length != 2 || !/^Bearer$/i.test(parts[0])) {
+      if (parts.length !== 2 || !/^Bearer$/i.test(parts[0])) {
         throw new RouteError({
           errorName: 'AuthenticationError',
           msg: "No token provided or another authorization method was used. Use 'Bearer token`",
@@ -154,7 +156,7 @@ export const handleGetMe = async (req: Request, res: Response, next: NextFunctio
         })
       } else {
         const token = parts[1]
-        jwt.verify(token, config.secret, function(err, decoded) {
+        jwt.verify(token, config.secret, (err, decoded) => {
           if (err) {
             Logger.error('JsonWebTokenError thrown\n', err)
             throw new RouteError({

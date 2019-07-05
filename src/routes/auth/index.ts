@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { handleRegister, handleLogin, handleGetMe, handleUsernameExists } from './handlers'
+import { handleGetMe, handleLogin, handleRegister, handleUsernameExists } from './handlers'
 
 const authRouter = Router()
 
