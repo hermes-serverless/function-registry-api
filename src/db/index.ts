@@ -1,1 +1,1 @@
-export { db, User, HermesFunction, HermesRun, HermesRunResult } from './models'
+export { db, HermesFunction, Run, User } from './models'

@@ -1,16 +1,47 @@
 import { Router } from 'express'
-import { writeFnOnReq, handleAllFunctions, handleOneFunction } from './functionHandlers'
-import { writeUserOnReq, handleAllUsers, handleOneUser } from './userHandlers'
+import {
+  AllFunctionsOps,
+  OneFunctionOps,
+  OneFunctionVersionOps,
+  writeFnOnReq,
+} from './functionHandlers'
+import { BaseRunHandler, OneRunHandler, RunCreatorHandler, writeRunOnReq } from './runHandlers'
+import { AllUsersOps, OneUserOps, writeUserOnReq } from './userHandlers'
 
 const userRouter = Router()
 
-userRouter.all('/:username', [writeUserOnReq, handleOneUser])
+userRouter.all('/', AllUsersOps.handler)
+userRouter.all('/:username', [writeUserOnReq, writeFnOnReq, OneUserOps.handler])
+
+userRouter.all('/:username/function', [writeUserOnReq, writeFnOnReq, AllFunctionsOps.handler])
 userRouter.all('/:username/function/:functionName', [
   writeUserOnReq,
   writeFnOnReq,
-  handleOneFunction,
+  OneFunctionOps.handler,
 ])
-userRouter.all('/:username/function', [writeUserOnReq, handleAllFunctions])
-userRouter.all('/', handleAllUsers)
+userRouter.all('/:username/function/:functionName/:functionVersion', [
+  writeUserOnReq,
+  writeFnOnReq,
+  OneFunctionVersionOps.handler,
+])
+
+userRouter.all('/:username/runs/', [writeUserOnReq, writeRunOnReq, BaseRunHandler.handler])
+userRouter.all('/:username/runs/:runId', [writeUserOnReq, writeRunOnReq, OneRunHandler.handler])
+
+userRouter.all('/:username/function-runs/:functionOwner/', [
+  writeUserOnReq,
+  writeRunOnReq,
+  BaseRunHandler.handler,
+])
+userRouter.all('/:username/function-runs/:functionOwner/:functionName/', [
+  writeUserOnReq,
+  writeRunOnReq,
+  BaseRunHandler.handler,
+])
+userRouter.all('/:username/function-runs/:functionOwner/:functionName/:functionVersion', [
+  writeUserOnReq,
+  writeRunOnReq,
+  RunCreatorHandler.handler,
+])
 
 export { userRouter }

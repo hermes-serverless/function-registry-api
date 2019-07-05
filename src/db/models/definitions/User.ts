@@ -1,15 +1,15 @@
-import { HermesRun } from './HermesRun'
-import { HermesFunction } from './HermesFunction'
-import { Sequelize, Model, DataTypes, ModelAttributes } from 'sequelize'
+import { DataTypes, Model, ModelAttributes, Sequelize } from 'sequelize'
 import {
+  Association,
   HasManyAddAssociationMixin,
-  HasManyGetAssociationsMixin,
-  HasManyHasAssociationMixin,
   HasManyCountAssociationsMixin,
   HasManyCreateAssociationMixin,
-  Association,
+  HasManyGetAssociationsMixin,
+  HasManyHasAssociationMixin,
 } from '../../../../node_modules/sequelize/types/lib/associations'
+import { HermesFunction } from './HermesFunction'
 import { ModelInitializer } from './ModelInitizalizer'
+import { Run } from './Run'
 
 export class User extends Model {
   public id!: number
@@ -18,27 +18,29 @@ export class User extends Model {
   public readonly createdAt!: Date
   public readonly updatedAt!: Date
 
-  public getFunction!: HasManyGetAssociationsMixin<HermesFunction>
-  public addFunction!: HasManyAddAssociationMixin<HermesFunction, number>
+  public getFunctions!: HasManyGetAssociationsMixin<HermesFunction>
+  public addFunctions!: HasManyAddAssociationMixin<HermesFunction, number>
   public hasFunction!: HasManyHasAssociationMixin<HermesFunction, number>
-  public countFunction!: HasManyCountAssociationsMixin
+  public countFunctions!: HasManyCountAssociationsMixin
   public createFunction!: HasManyCreateAssociationMixin<HermesFunction>
+  public readonly functions?: HermesFunction[]
 
-  public getRun!: HasManyGetAssociationsMixin<HermesRun>
-  public addRun!: HasManyAddAssociationMixin<HermesRun, number>
-  public hasRun!: HasManyHasAssociationMixin<HermesRun, number>
+  public getRuns!: HasManyGetAssociationsMixin<Run>
+  public addRuns!: HasManyAddAssociationMixin<Run, number>
+  public hasRun!: HasManyHasAssociationMixin<Run, number>
   public countRuns!: HasManyCountAssociationsMixin
-  public createRun!: HasManyCreateAssociationMixin<HermesRun>
+  public createRun!: HasManyCreateAssociationMixin<Run>
+  public readonly runs?: Run[]
 
   public static associations: {
     functions: Association<User, HermesFunction>
-    runs: Association<User, HermesRun>
+    runs: Association<User, Run>
   }
 }
 
 export class Initializer implements ModelInitializer {
   initAttributes(sequelize: Sequelize) {
-    const UserAttributes: ModelAttributes = {
+    const userAttributes: ModelAttributes = {
       id: {
         type: DataTypes.NUMBER,
         autoIncrement: true,
@@ -63,14 +65,33 @@ export class Initializer implements ModelInitializer {
       },
     }
 
-    User.init(UserAttributes, {
-      tableName: 'Users',
+    User.init(userAttributes, {
       sequelize,
+      tableName: 'Users',
     })
   }
 
   initRelations = (models: any) => {
-    User.hasMany(models.HermesFunction, { as: 'Function', foreignKey: 'ownerUserId' })
-    User.hasMany(models.HermesRun)
+    User.hasMany(models.HermesFunction, {
+      as: {
+        singular: 'function',
+        plural: 'functions',
+      },
+      foreignKey: {
+        name: 'ownerId',
+        allowNull: false,
+      },
+    })
+
+    User.hasMany(models.Run, {
+      as: {
+        singular: 'run',
+        plural: 'runs',
+      },
+      foreignKey: {
+        name: 'userId',
+        allowNull: false,
+      },
+    })
   }
 }

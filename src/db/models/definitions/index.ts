@@ -1,8 +1,7 @@
-import * as UserDef from './User'
 import * as HermesFunctionDef from './HermesFunction'
-import * as HermesRunDef from './HermesRun'
-import * as HermesRunResultDef from './HermesRunResult'
 import { ModelInitializerConstructor } from './ModelInitizalizer'
+import * as RunDef from './Run'
+import * as UserDef from './User'
 
 interface DefImport {
   Initializer: ModelInitializerConstructor
@@ -11,21 +10,18 @@ interface DefImport {
 export interface HermesModels {
   User: typeof UserDef.User
   HermesFunction: typeof HermesFunctionDef.HermesFunction
-  HermesRun: typeof HermesRunDef.HermesRun
-  HermesRunResult: typeof HermesRunResultDef.HermesRunResult
+  Run: typeof RunDef.Run
 }
 
 export const models: HermesModels = {
   User: UserDef.User,
   HermesFunction: HermesFunctionDef.HermesFunction,
-  HermesRun: HermesRunDef.HermesRun,
-  HermesRunResult: HermesRunResultDef.HermesRunResult,
+  Run: RunDef.Run,
 }
 
-const definitions: DefImport[] = [UserDef, HermesFunctionDef, HermesRunDef, HermesRunResultDef]
+const definitions: DefImport[] = [UserDef, HermesFunctionDef, RunDef]
 export const modelInitializers = definitions.map(def => new def.Initializer())
 
-export { User } from './User'
 export { HermesFunction } from './HermesFunction'
-export { HermesRun } from './HermesRun'
-export { HermesRunResult } from './HermesRunResult'
+export { Run } from './Run'
+export { User } from './User'

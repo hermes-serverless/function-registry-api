@@ -9,6 +9,12 @@ services:
     environment:
       - POSTGRES_USER=hermes
       - POSTGRES_PASSWORD=hermes
+  db-manager:
+    build:
+      context: .
+      target: production
+    ports:
+      - '8080:8080'
 
 volumes:
   pgdata:

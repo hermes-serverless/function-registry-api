@@ -1,6 +1,7 @@
 import { Sequelize } from 'sequelize'
+import { Logger } from '../../utils/Logger'
 import sequelizeConfig from '../config/config.json'
-import { models, modelInitializers, HermesModels } from './definitions'
+import { HermesModels, modelInitializers, models } from './definitions'
 import { ModelInitializer } from './definitions/ModelInitizalizer'
 
 type NodeEnv = 'development' | 'test' | 'production'
@@ -12,6 +13,8 @@ interface Database extends HermesModels {
 
 const env = (process.env.NODE_ENV as NodeEnv) || 'development'
 const config = sequelizeConfig[env]
+
+Logger.info(`[Sequelize] Environment: ${env}`)
 
 // @ts-ignore
 const sequelize = new Sequelize(config.database, config.username, config.password, config)
@@ -25,10 +28,10 @@ modelInitializers.forEach((initializer: ModelInitializer) => {
 })
 
 const db: Database = {
+  sequelize,
+  Sequelize,
   ...models,
-  sequelize: sequelize,
-  Sequelize: Sequelize,
 }
 
+export { HermesFunction, Run, User } from './definitions'
 export { db }
-export { User, HermesFunction, HermesRunResult, HermesRun } from './definitions'
