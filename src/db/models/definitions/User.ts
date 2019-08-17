@@ -51,8 +51,8 @@ export class Initializer implements ModelInitializer {
         allowNull: false,
         validate: {
           is: {
-            args: [/^[a-zA-Z0-9]*$/i],
-            msg: 'Use only letters and numbers on username',
+            args: [/^[a-zA-Z0-9_-]*$/],
+            msg: 'Use only letters, numbers, underlines and hyphens on username',
           },
           notEmpty: {
             msg: "Username can't be empty",
