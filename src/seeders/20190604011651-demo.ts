@@ -25,10 +25,7 @@ const registerFunction = async ({ owner, data }: FunctionSeed, queryInterface: Q
   })
 }
 
-const registerRun = async (
-  { username, functionData, data }: RunSeed,
-  queryInterface: QueryInterface
-) => {
+const registerRun = async ({ username, functionData, data }: RunSeed, queryInterface: QueryInterface) => {
   const { functionOwner, functionName, functionVersion } = functionData
 
   const user = await db.User.findOne({ where: { username } })

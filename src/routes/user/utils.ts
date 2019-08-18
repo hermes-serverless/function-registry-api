@@ -20,11 +20,7 @@ export const getUser = async (username: string) => {
   return user
 }
 
-export const getFunctionArr = async (
-  user: User,
-  functionName?: string,
-  functionVersion?: string
-) => {
+export const getFunctionArr = async (user: User, functionName?: string, functionVersion?: string) => {
   const fnArr = await user.getFunctions({
     where: {
       ...(functionName ? { functionName } : {}),

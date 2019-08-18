@@ -8,29 +8,17 @@ import {
   FunctionGetObj,
   FunctionPutObj,
 } from '@hermes-serverless/api-types-db-manager/function'
+import { RunPostObj } from '@hermes-serverless/api-types-db-manager/run'
 
 const PG_PORT = 23000
 const PG_NAME = `api-run-test${randomBytes(8).toString('hex')}`
 mockSequelizePort(PG_PORT)
 
 import { app } from '../../app'
-import { db, User, HermesFunction } from '../../db'
-import { create } from 'istanbul-reports'
-import { RunData, RunPostObj } from '@hermes-serverless/api-types-db-manager/run'
-
-let user: User
-let fn: HermesFunction
+import { db } from '../../db'
 
 beforeAll(async () => {
   await startupPostgresContainer(PG_NAME, PG_PORT)
-  // fn = await user.createFunction({
-  //   functionName: 'function-name',
-  //   functionVersion: '1.0.0',
-  //   language: 'cpp',
-  //   gpuCapable: false,
-  //   scope: 'public',
-  //   imageName: 'some-docker-image',
-  // })
 }, 10000)
 
 afterAll(async () => {
@@ -73,9 +61,7 @@ const checkUserFieldOnRes = (body: any) => {
   // @ts-ignore
   expect(R.keys(body.user).length).toBe(4)
   // @ts-ignore
-  expect(R.keys(body.user)).toEqual(
-    expect.arrayContaining(['id', 'username', 'createdAt', 'updatedAt'])
-  )
+  expect(R.keys(body.user)).toEqual(expect.arrayContaining(['id', 'username', 'createdAt', 'updatedAt']))
 }
 
 const checkFunctionData = (fn: FunctionData) => {
@@ -191,15 +177,7 @@ describe('Function', () => {
 
 describe('Run', () => {
   const checkRunFunctionData = (fn: any, owner: string) => {
-    const keys = [
-      'functionName',
-      'functionVersion',
-      'language',
-      'gpuCapable',
-      'scope',
-      'imageName',
-      'owner',
-    ]
+    const keys = ['functionName', 'functionVersion', 'language', 'gpuCapable', 'scope', 'imageName', 'owner']
     expect(R.keys(fn).length).toBe(keys.length)
     expect(R.keys(fn)).toEqual(expect.arrayContaining(keys))
     expect(R.keys(fn.owner).length).toBe(1)
@@ -210,12 +188,7 @@ describe('Run', () => {
   test('Create run', async () => {
     const { data: userData } = await createUser()
     const { data: fnData } = await createFunction(userData.username)
-    const { res } = await createRun(
-      userData.username,
-      userData.username,
-      fnData.functionName,
-      fnData.functionVersion
-    )
+    const { res } = await createRun(userData.username, userData.username, fnData.functionName, fnData.functionVersion)
     const body = res.body as RunPostObj
     checkUserFieldOnRes(body)
     checkRunFunctionData(body.createdRun[0].function, userData.username)
