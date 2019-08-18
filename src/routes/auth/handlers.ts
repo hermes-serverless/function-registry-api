@@ -11,11 +11,11 @@ const TOKEN_EXPIRATION = 86400
 
 export const hashPassword = (password: string): string => bcrypt.hashSync(password, 8)
 
-const getToken = (userId: number, username: string): string => {
+export const getToken = (userId: number, username: string): string => {
   return jwt.sign({ username, id: userId }, config.secret, { expiresIn: TOKEN_EXPIRATION })
 }
 
-const registerUser = async ({ username, password }: LoginData): Promise<string> => {
+export const registerUser = async ({ username, password }: LoginData): Promise<string> => {
   try {
     const user = await db.User.create({
       username,
@@ -41,12 +41,12 @@ const registerUser = async ({ username, password }: LoginData): Promise<string> 
   }
 }
 
-const usernameExists = async (username: string): Promise<boolean> => {
+export const usernameExists = async (username: string): Promise<boolean> => {
   const user = await db.User.findOne({ where: { username } })
   return user != null
 }
 
-const login = async ({ username, password }: LoginData): Promise<string> => {
+export const login = async ({ username, password }: LoginData): Promise<string> => {
   const user = await db.User.findOne({ where: { username } })
   if (!user) {
     throw new NoSuchUser({

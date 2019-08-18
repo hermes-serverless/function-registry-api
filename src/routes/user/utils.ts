@@ -30,6 +30,13 @@ export const getFunctionArr = async (
       ...(functionName ? { functionName } : {}),
       ...(functionVersion ? { functionVersion } : {}),
     },
+    include: [
+      {
+        model: User,
+        attributes: { exclude: ['password', 'id', 'createdAt', 'updatedAt'] },
+        as: 'owner',
+      },
+    ],
   })
 
   if (functionName && fnArr.length === 0) {

@@ -33,6 +33,30 @@ export class HermesFunction extends Model {
   public static associations: {
     runs: Association<HermesFunction, Run>
   }
+
+  public serializeToObj = () => {
+    return {
+      id: this.id.toString(),
+      ownerId: this.ownerId.toString(),
+      functionName: this.functionName,
+      functionVersion: this.functionVersion,
+      language: this.language,
+      gpuCapable: this.gpuCapable,
+      scope: this.scope,
+      imageName: this.imageName,
+    }
+  }
+
+  public serializeToObjForRun = () => {
+    return {
+      functionName: this.functionName,
+      functionVersion: this.functionVersion,
+      language: this.language,
+      gpuCapable: this.gpuCapable,
+      scope: this.scope,
+      imageName: this.imageName,
+    }
+  }
 }
 
 const supportedLangs = ['cpp', 'cuda']

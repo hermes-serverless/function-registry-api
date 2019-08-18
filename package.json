@@ -1,8 +1,28 @@
 {
-  "name": "hermes-db",
+  "name": "db-manager",
   "version": "0.0.2",
-  "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "start:dev": "yarn nodemon",
+    "start:prod": "node server.js",
+    "test": "jest --logHeapUsage",
+    "build": "rm -rf build && yarn tsc",
+    "prepare": "yarn build",
+    "lint": "tslint -c tslint.json 'src/**/*.ts'",
+    "format": "prettier --config ./prettier.config.js --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "preversion": "yarn lint && yarn format",
+    "version": "git add --all",
+    "postversion": "git push && git push --tags"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hermes-serverless/db-manager.git"
+  },
+  "author": "Tiago Nápoli <napoli.tiago96@gmail.com>",
+  "bugs": {
+    "url": "https://github.com/hermes-serverless/db-manager/issues"
+  },
+  "homepage": "https://github.com/hermes-serverless/db-manager#readme",
   "dependencies": {
     "bcrypt": "^3.0.6",
     "express": "^4.16.4",
@@ -14,12 +34,8 @@
     "sequelize": "^5.8.7",
     "winston": "^3.2.1"
   },
-  "scripts": {
-    "start:dev": "yarn nodemon",
-    "start:prod": "node server.js",
-    "tslint": "tslint -c tslint.json 'src/**/*.ts'"
-  },
   "devDependencies": {
+    "@hermes-serverless/api-types-db-manager": "^0.0.2",
     "@types/bcrypt": "^3.0.0",
     "@types/bluebird": "^3.5.27",
     "@types/express": "^4.16.1",
@@ -28,33 +44,23 @@
     "@types/morgan": "^1.7.35",
     "@types/ramda": "^0.26.9",
     "@types/sequelize": "^4.28.3",
+    "@types/supertest": "^2.0.8",
     "@types/validator": "^10.11.0",
     "@types/winston": "^2.4.4",
+    "@types/wtfnode": "^0.7.0",
+    "execa": "^2.0.4",
+    "get-port": "^5.0.0",
     "jest": "^24.7.1",
     "nodemon": "^1.19.0",
     "prettier": "^1.17.0",
+    "sequelize-cli": "^5.5.0",
+    "supertest": "^4.0.2",
     "ts-jest": "^24.0.2",
     "ts-node": "^8.1.0",
     "tslint": "^5.16.0",
     "tslint-config-airbnb": "^5.11.1",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.4.4"
-  },
-  "jest": {
-    "roots": [
-      "<rootDir>/src"
-    ],
-    "transform": {
-      "^.+\\.tsx?$": "ts-jest"
-    },
-    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.tsx?$",
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js",
-      "jsx",
-      "json",
-      "node"
-    ]
+    "typescript": "^3.4.4",
+    "wtfnode": "^0.8.0"
   }
 }
