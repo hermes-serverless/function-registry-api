@@ -3,15 +3,15 @@ import morgan from 'morgan'
 import { authRouter, userRouter } from './routes'
 import { Logger } from './utils/Logger'
 
-const server = express()
+export const app = express()
 
-server.use(express.json())
-server.use(morgan('dev'))
+app.use(express.json())
+app.use(morgan('dev'))
 
-server.use('/auth', authRouter)
-server.use('/user', userRouter)
+app.use('/auth', authRouter)
+app.use('/user', userRouter)
 
-server.use((err: any, req: Request, res: Response, next: NextFunction) => {
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   if (!err.getStatusCode) err.getStatusCode = () => 500
   if (!err.getResponseObject) {
     err.getResponseObject = () => {
@@ -22,15 +22,17 @@ server.use((err: any, req: Request, res: Response, next: NextFunction) => {
   res.status(err.getStatusCode()).send(err.getResponseObject())
 })
 
-server.use('/', (_, res) => {
+app.use('/', (_, res) => {
   res.status(404).send({
     error: 'PageNotFound',
     message: 'Page not found',
   })
 })
 
-const PORT = process.env.PORT || 8080
+export const startServer = () => {
+  const PORT = process.env.PORT || 8080
 
-server.listen(PORT, () => {
-  console.log(`Server listening on port http://localhost:${PORT}`)
-})
+  app.listen(PORT, () => {
+    console.log(`Server listening on port http://localhost:${PORT}`)
+  })
+}

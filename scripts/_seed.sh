@@ -1,21 +1,35 @@
-# Read arguments passed to the script.
-if [ -z "$1" ]; then
- ENVIRONMENT='development'
-else
- ENVIRONMENT="$1"
-fi
-
-if [ -z "$2" ]; then
- COMMAND='db:seed:all'
-else
- COMMAND="$2"
-fi
-
+#! /bin/bash
 set -euo pipefail
+
+display_info() {
+  printf "Usage ./_seed.sh [OPT]\nOptions are:\n"
+  printf "  -e arg: Environment\n"
+  printf "  -p arg: db port\n"
+  printf "  -c arg: Sequelize command\n"
+  printf "  -h: Show this message\n"
+  exit 0
+}
+
+ENVIRONMENT='development'
+PORT="5432"
+COMMAND='db:seed:all'
+while getopts "e:p:c:h" OPT; do
+  case "$OPT" in
+    "e") ENVIRONMENT=$OPTARG;;
+    "p") PORT=$OPTARG;;
+    "c") COMMAND=$OPTARG;;
+    "h") display_info;;
+    "?") display_info;;
+  esac 
+done
+
+SCRIPT=$(python -c "import os; print(os.path.realpath('$0'))")
+SCRIPTPATH=`dirname $SCRIPT`
 
 start_text=(
   "Creating tsconfig for seeders compilation."
   "Compiling seeds scripts."
+  "Copying config.js"
   "Doing $COMMAND"
   "Removing seed-tsconfig"
 )
@@ -23,6 +37,7 @@ start_text=(
 end_text=(
   "Created tsconfig file"
   "Compilation completed."
+  "Copied config.js"
   "$COMMAND DONE"
   "Done"
 )
@@ -38,7 +53,8 @@ json_config='{
 commands=(
   "echo '$json_config' > seed-tsconfig.json"
   "yarn tsc --project seed-tsconfig.json"
-  "NODE_ENV=$ENVIRONMENT npx sequelize-cli $COMMAND --env $ENVIRONMENT"
+  "cp -r $SCRIPTPATH/../src/db/config $SCRIPTPATH/../build-seeders/db/config"
+  "DB_PORT=$PORT NODE_ENV=$ENVIRONMENT yarn sequelize $COMMAND --env $ENVIRONMENT --config $SCRIPTPATH/../src/db/config/config.js"
   "rm seed-tsconfig.json"
 )
 

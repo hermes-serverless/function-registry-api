@@ -12,6 +12,19 @@ export class Run extends Model {
 
   public readonly createdAt!: Date
   public readonly updatedAt!: Date
+
+  public serializeToObj = () => {
+    return {
+      id: this.id.toString(),
+      functionId: this.functionId,
+      userId: this.userId.toString(),
+      startTime: this.startTime,
+      status: this.status,
+      endTime: this.endTime,
+      outputPath: this.outputPath,
+      watcherID: '',
+    }
+  }
 }
 
 export class Initializer implements ModelInitializer {

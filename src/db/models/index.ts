@@ -1,10 +1,11 @@
 import { Sequelize } from 'sequelize'
 import { Logger } from '../../utils/Logger'
-import sequelizeConfig from '../config/config.json'
 import { HermesModels, modelInitializers, models } from './definitions'
 import { ModelInitializer } from './definitions/ModelInitizalizer'
 
 type NodeEnv = 'development' | 'test' | 'production'
+
+const sequelizeConfig: any = require('../config/config.js')
 
 interface Database extends HermesModels {
   sequelize: Sequelize
@@ -16,8 +17,10 @@ const config = sequelizeConfig[env]
 
 Logger.info(`[Sequelize] Environment: ${env}`)
 
-// @ts-ignore
-const sequelize = new Sequelize(config.database, config.username, config.password, config)
+const sequelize = new Sequelize(config.database, config.username, config.password, {
+  ...config,
+  logging: () => {},
+})
 
 modelInitializers.forEach((initializer: ModelInitializer) => {
   initializer.initAttributes(sequelize)

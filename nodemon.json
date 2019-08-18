@@ -1,6 +1,6 @@
 {
   "ignore": ["**/*.test.ts", ".git", "node_modules"],
   "watch": ["src"],
-  "exec": "yarn ts-node src/server.ts",
+  "exec": "yarn ts-node src/index.ts",
   "ext": "ts"
 }

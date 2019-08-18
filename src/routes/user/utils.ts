@@ -20,16 +20,19 @@ export const getUser = async (username: string) => {
   return user
 }
 
-export const getFunctionArr = async (
-  user: User,
-  functionName?: string,
-  functionVersion?: string
-) => {
+export const getFunctionArr = async (user: User, functionName?: string, functionVersion?: string) => {
   const fnArr = await user.getFunctions({
     where: {
       ...(functionName ? { functionName } : {}),
       ...(functionVersion ? { functionVersion } : {}),
     },
+    include: [
+      {
+        model: User,
+        attributes: { exclude: ['password', 'id', 'createdAt', 'updatedAt'] },
+        as: 'owner',
+      },
+    ],
   })
 
   if (functionName && fnArr.length === 0) {

@@ -1,13 +1,27 @@
 #! /bin/bash
-
-# Read arguments passed to the script.
-if [ -z "$1" ]; then
- ENVIRONMENT='development'
-else
- ENVIRONMENT="$1"
-fi
-
 set -euo pipefail
+
+display_info() {
+  printf "Usage ./migrate.sh [OPT]\nOptions are:\n"
+  printf "  -p arg: db port\n"
+  printf "  -e arg: environment\n"
+  printf "  -h: Show this message\n"
+  exit 0
+}
+
+PORT="5432"
+ENVIRONMENT='development'
+while getopts "hp:e:" OPT; do
+  case "$OPT" in
+    "p") PORT=$OPTARG;;
+    "e") ENVIRONMENT=$OPTARG;;
+    "h") display_info;;
+    "?") display_info;;
+  esac 
+done
+
+SCRIPT=$(python -c "import os; print(os.path.realpath('$0'))")
+SCRIPTPATH=`dirname $SCRIPT`
 
 echo "Migrating for environment: $ENVIRONMENT"
 echo ""
@@ -37,7 +51,7 @@ json_config='{
 commands=(
   "echo '$json_config' > migrate-tsconfig.json"
   "yarn tsc --project migrate-tsconfig.json"
-  "npx sequelize-cli db:migrate --env $ENVIRONMENT"
+  "DB_PORT=$PORT yarn sequelize db:migrate --env $ENVIRONMENT --config $SCRIPTPATH/../src/db/config/config.js"
   "rm migrate-tsconfig.json"
 )
 
