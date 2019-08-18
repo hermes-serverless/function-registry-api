@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "start:dev": "yarn nodemon",
-    "start:prod": "node server.js",
+    "start:prod": "node index.js",
     "test": "jest --logHeapUsage",
     "build": "rm -rf build && yarn tsc",
     "prepare": "yarn build",
