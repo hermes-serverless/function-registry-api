@@ -10,7 +10,7 @@
     "username": "hermes",
     "password": "hermes",
     "database": "hermes",
-    "host": "db",
+    "host": "localhost",
     "dialect": "postgres"
   },
   "production": {

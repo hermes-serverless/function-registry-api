@@ -1,3 +1,4 @@
+import { RunData } from '@hermes-serverless/api-types-db-manager/run'
 import { NextFunction, Response } from 'express'
 import { Op } from 'sequelize'
 import { db, Run } from '../../db'
@@ -6,13 +7,7 @@ import { HermesFunction } from './../../db/models/definitions/HermesFunction'
 import { User } from './../../db/models/definitions/User'
 import { Logger } from './../../utils/Logger'
 import { ReqWithRun } from './types.d'
-import {
-  checkValidation,
-  createResponseObject,
-  excludeAttributes,
-  getFunctionArr,
-  getUser,
-} from './utils'
+import { checkValidation, createResponseObject, getFunctionArr, getUser } from './utils'
 
 export const writeRunOnReq = async (req: ReqWithRun, res: Response, next: NextFunction) => {
   try {
@@ -60,7 +55,7 @@ export const writeRunOnReq = async (req: ReqWithRun, res: Response, next: NextFu
 export class BaseRunHandler {
   public static async handler(req: ReqWithRun, res: Response, next: NextFunction) {
     try {
-      const ops = new BaseRunHandler(req)
+      const ops = new BaseRunHandler(req.runArr)
       if (req.method === 'DELETE') {
         const deletedRuns = (await ops.del()).map(fn => fn.toJSON())
         res.status(200).send(createResponseObject(req, { deletedRuns }))
@@ -76,26 +71,23 @@ export class BaseRunHandler {
     }
   }
 
-  protected req: ReqWithRun
-  constructor(req: ReqWithRun) {
-    this.req = req
-  }
+  constructor(protected runArr: Run[]) {}
 
   get = (): Run[] => {
-    return this.req.runArr
+    return this.runArr
   }
 
   del = async (): Promise<Run[]> => {
-    const deleteArr = this.req.runArr.map(run => run.destroy())
+    const deleteArr = this.runArr.map(run => run.destroy())
     await Promise.all(deleteArr)
-    return this.req.runArr
+    return this.runArr
   }
 }
 
 export class OneRunHandler extends BaseRunHandler {
   public static async handler(req: ReqWithRun, res: Response, next: NextFunction) {
     try {
-      const ops = new OneRunHandler(req)
+      const ops = new OneRunHandler(req.runArr)
       if (req.method === 'DELETE') {
         const deletedRuns = (await ops.del()).map(fn => fn.toJSON())
         res.status(200).send(createResponseObject(req, { deletedRuns }))
@@ -103,7 +95,7 @@ export class OneRunHandler extends BaseRunHandler {
         const runs = (await ops.get()).map(fn => fn.toJSON())
         res.status(200).send(createResponseObject(req, { runs }))
       } else if (req.method === 'PUT') {
-        const updatedRuns = [(await ops.upd()).toJSON()]
+        const updatedRuns = [(await ops.upd(req.body)).toJSON()]
         res.status(200).send(createResponseObject(req, { updatedRuns }))
       } else {
         res.status(400).send('This route only accepts DELETE, GET or PUT requests')
@@ -114,10 +106,10 @@ export class OneRunHandler extends BaseRunHandler {
     }
   }
 
-  public upd = async (): Promise<Run> => {
-    const { startTime, status, endTime, outputPath } = this.req.body
+  public upd = async (data: any): Promise<Run> => {
+    const { startTime, status, endTime, outputPath } = data
     try {
-      const run = await this.req.runArr[0].set({
+      const run = await this.runArr[0].set({
         ...(startTime != null ? { startTime } : {}),
         ...(status != null ? { status } : {}),
         ...(endTime != null ? { endTime } : {}),
@@ -136,7 +128,7 @@ export class OneRunHandler extends BaseRunHandler {
 export class RunCreatorHandler extends BaseRunHandler {
   public static async handler(req: ReqWithRun, res: Response, next: NextFunction) {
     try {
-      const ops = new RunCreatorHandler(req)
+      const ops = new RunCreatorHandler(req.runArr)
       if (req.method === 'DELETE') {
         const deletedRuns = (await ops.del()).map(fn => fn.toJSON())
         res.status(200).send(createResponseObject(req, { deletedRuns }))
@@ -144,12 +136,7 @@ export class RunCreatorHandler extends BaseRunHandler {
         const runs = (await ops.get()).map(fn => fn.toJSON())
         res.status(200).send(createResponseObject(req, { runs }))
       } else if (req.method === 'POST') {
-        const createdRun = [
-          {
-            ...(await ops.create()).toJSON(),
-            function: excludeAttributes(req.fn!.toJSON(), ['id', 'ownerId']),
-          },
-        ]
+        const createdRun = [await ops.create(req.user, req.fn, req.body)]
         res.status(200).send(createResponseObject(req, { createdRun }))
       } else {
         res.status(400).send('This route only accepts DELETE, GET or POST requests')
@@ -160,10 +147,10 @@ export class RunCreatorHandler extends BaseRunHandler {
     }
   }
 
-  public create = async (): Promise<Run> => {
-    const { startTime, status, endTime, outputPath } = this.req.body
-    const userId = this.req.user.id
-    const functionId = this.req.fn!.id
+  public create = async (user: User, fn: HermesFunction, runData: any): Promise<RunData> => {
+    const { startTime, status, endTime, outputPath } = runData
+    const userId = user.id
+    const functionId = fn.id
     try {
       const createdRun = await db.Run.build({
         functionId,
@@ -175,7 +162,15 @@ export class RunCreatorHandler extends BaseRunHandler {
       })
 
       await createdRun.save()
-      return createdRun
+      const ret = {
+        ...createdRun.serializeToObj(),
+        function: {
+          ...fn.serializeToObjForRun(),
+          owner: { username: (fn as any).owner.username },
+        },
+      }
+
+      return ret
     } catch (err) {
       Logger.error('Error on create RunCreator\n', err)
       checkValidation(err)

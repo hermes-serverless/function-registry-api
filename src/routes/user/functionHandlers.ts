@@ -1,5 +1,5 @@
 import { NextFunction, Response } from 'express'
-import { db } from '../../db'
+import { db, User } from '../../db'
 import { FunctionAlreadyExists, NoSuchFunction } from '../errors/RouteError'
 import { HermesFunction } from './../../db/models/definitions/HermesFunction'
 import { Logger } from './../../utils/Logger'
@@ -10,26 +10,39 @@ const checkUniqueConstraint = (err: Error, msg?: string) => {
   if (err.name === 'SequelizeUniqueConstraintError') throw new FunctionAlreadyExists(msg)
 }
 
+export const getFunctions = async (user: User, { functionName, functionVersion }: any) => {
+  const fnArr = await user.getFunctions({
+    where: {
+      ...(functionName ? { functionName } : {}),
+      ...(functionVersion ? { functionVersion } : {}),
+    },
+    include: [
+      {
+        model: User,
+        attributes: { exclude: ['password', 'id', 'createdAt', 'updatedAt'] },
+        as: 'owner',
+      },
+    ],
+  })
+
+  if (functionName && fnArr.length === 0) {
+    const fmsg = functionName + (functionVersion ? `:${functionVersion}` : '')
+    throw new NoSuchFunction({
+      msg: `No function ${fmsg} for user ${user.username}`,
+      errorName: 'NoSuchFunction',
+      statusCode: 404,
+    })
+  }
+
+  return fnArr
+}
+
 export const writeFnOnReq = async (req: ReqWithFn, res: Response, next: NextFunction) => {
   try {
-    const functionName = req.params.functionName
-    const functionVersion = req.params.functionVersion
-    const fnArr = await req.user.getFunctions({
-      where: {
-        ...(functionName ? { functionName } : {}),
-        ...(functionVersion ? { functionVersion } : {}),
-      },
+    req.fnArr = await getFunctions(req.user, {
+      functionName: req.params.functionName,
+      functionVersion: req.params.functionVersion,
     })
-
-    if (functionName && fnArr.length === 0) {
-      const fmsg = functionName + (functionVersion ? `:${functionVersion}` : '')
-      throw new NoSuchFunction({
-        msg: `No function ${fmsg} for user ${req.user.username}`,
-        errorName: 'NoSuchFunction',
-        statusCode: 404,
-      })
-    }
-    req.fnArr = fnArr
     next()
   } catch (err) {
     next(err)
@@ -116,10 +129,7 @@ export class OneFunctionOps {
     }
   }
 
-  req: ReqWithFn
-  constructor(req: ReqWithFn) {
-    this.req = req
-  }
+  constructor(private req: ReqWithFn) {}
 
   public del = async (): Promise<HermesFunction[]> => {
     const deleteArr = await this.req.fnArr.map(fn => fn.destroy())
@@ -159,7 +169,7 @@ export class OneFunctionOps {
 export class AllFunctionsOps {
   public static async handler(req: ReqWithFn, res: Response, next: NextFunction) {
     try {
-      const ops = new AllFunctionsOps(req)
+      const ops = new AllFunctionsOps(req.fnArr, req.user)
       if (req.method === 'DELETE') {
         const deletedFunctions = (await ops.del()).map(fn => fn.toJSON())
         res.status(200).send(createResponseObject(req, { deletedFunctions }))
@@ -167,7 +177,7 @@ export class AllFunctionsOps {
         const functions = (await ops.get()).map(fn => fn.toJSON())
         res.status(200).send(createResponseObject(req, { functions }))
       } else if (req.method === 'POST') {
-        const newFunction = [(await ops.create()).toJSON()]
+        const newFunction = [(await ops.create(req.body)).toJSON()]
         res.status(200).send(createResponseObject(req, { newFunction }))
       } else {
         res.status(400).send('This route only accepts DELETE, GET or POST requests')
@@ -178,13 +188,10 @@ export class AllFunctionsOps {
     }
   }
 
-  req: ReqWithFn
-  constructor(req: ReqWithFn) {
-    this.req = req
-  }
+  constructor(private fnArr: HermesFunction[], private user: User) {}
 
-  public create = async (): Promise<HermesFunction> => {
-    const { functionName, language, gpuCapable, scope, imageName, functionVersion } = this.req.body
+  public create = async (data: any): Promise<HermesFunction> => {
+    const { functionName, language, gpuCapable, scope, imageName, functionVersion } = data
     try {
       const newFunction = await db.HermesFunction.build({
         functionName,
@@ -193,7 +200,7 @@ export class AllFunctionsOps {
         scope,
         imageName,
         functionVersion,
-        ownerId: this.req.user.id,
+        ownerId: this.user.id,
       })
       await newFunction.save()
       return newFunction
@@ -206,12 +213,12 @@ export class AllFunctionsOps {
   }
 
   public get = (): HermesFunction[] => {
-    return this.req.fnArr
+    return this.fnArr
   }
 
   public del = async (): Promise<HermesFunction[]> => {
-    const deleteArr = this.req.fnArr.map(fn => fn.destroy())
+    const deleteArr = this.fnArr.map(fn => fn.destroy())
     await Promise.all(deleteArr)
-    return this.req.fnArr
+    return this.fnArr
   }
 }
