@@ -11,7 +11,7 @@ display_info() {
 }
 
 ENVIRONMENT='development'
-HOST="db"
+HOST="function-registry-db"
 PORT="5432"
 while getopts "e:p:u:h" OPT; do
   case "$OPT" in

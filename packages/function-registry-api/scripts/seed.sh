@@ -12,7 +12,7 @@ display_info() {
 }
 
 ENVIRONMENT='development'
-HOST="db"
+HOST="function-registry-db"
 PORT="5432"
 COMMAND='db:seed:all'
 while getopts "e:p:c:u:h" OPT; do
