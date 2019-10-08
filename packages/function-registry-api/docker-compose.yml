@@ -9,7 +9,7 @@ services:
     environment:
       - POSTGRES_USER=hermes
       - POSTGRES_PASSWORD=hermes
-  db-manager:
+  function-registry-api:
     build:
       context: .
       target: production

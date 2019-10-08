@@ -1,4 +1,4 @@
-import { RunData } from '@hermes-serverless/api-types-db-manager/run'
+import { RunData } from '@hermes-serverless/api-types-function-registry-api/run'
 import { NextFunction, Response } from 'express'
 import { Op } from 'sequelize'
 import { db, Run } from '../../db'
@@ -170,7 +170,7 @@ export class RunCreatorHandler extends BaseRunHandler {
         },
       }
 
-      return ret
+      return (ret as unknown) as RunData
     } catch (err) {
       Logger.error('Error on create RunCreator\n', err)
       checkValidation(err)

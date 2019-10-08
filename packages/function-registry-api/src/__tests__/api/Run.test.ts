@@ -7,8 +7,8 @@ import {
   FunctionPostObj,
   FunctionGetObj,
   FunctionPutObj,
-} from '@hermes-serverless/api-types-db-manager/function'
-import { RunPostObj } from '@hermes-serverless/api-types-db-manager/run'
+} from '@hermes-serverless/api-types-function-registry-api/function'
+import { RunPostObj } from '@hermes-serverless/api-types-function-registry-api/run'
 
 const PG_PORT = 23000
 const PG_NAME = `api-run-test${randomBytes(8).toString('hex')}`

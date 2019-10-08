@@ -4,6 +4,7 @@ build-migrations
 node_modules
 .vscode
 *.tmp
+*.log
 
 seed-tsconfig.json
 migrate-tsconfig.json
