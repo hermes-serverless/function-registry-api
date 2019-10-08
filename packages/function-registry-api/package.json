@@ -1,6 +1,6 @@
 {
   "name": "function-registry-api",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "license": "MIT",
   "scripts": {
     "start:dev": "yarn nodemon",
