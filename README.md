@@ -1,0 +1,1 @@
+For information on installation and architecture refer to [hermes-install](https://github.com/hermes-serverless/hermes-install).
